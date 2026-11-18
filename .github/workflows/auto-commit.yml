@@ -1,0 +1,52 @@
+name: Auto Commit Bot
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Setiap hari jam 5 pagi WIB
+  workflow_dispatch:
+
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Git user
+        run: |
+          git config user.name "putramah"
+          git config user.email "putram.works@gmail.com"
+
+      - name: Switch to target branch
+        run: |
+          git fetch origin
+          git checkout main
+
+      - name: Generate random commits
+        run: |
+          echo "" > dummy.txt  # Reset file biar clean
+
+          COUNT=$(( RANDOM % 36 + 5 ))  # 5-40 commit
+          for ((i=1; i<=COUNT; i++)); do
+            CHAR=$(tr -dc a-z </dev/urandom | head -c1)  # Random huruf
+
+            echo "$CHAR $(date +%s%N)" >> dummy.txt  # Tambah timestamp biar file selalu berubah
+            git add dummy.txt
+
+            git commit -m "$CHAR" || echo "Lewat commit kosong"
+          done
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Push commits
+        run: |
+          git remote set-url origin git@github.com:${{ github.repository }}.git
+          git push origin main
+
+
