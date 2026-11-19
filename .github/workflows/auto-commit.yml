@@ -2,7 +2,7 @@ name: Auto Commit Bot
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Setiap hari jam 5 pagi WIB
+    - cron: '17 22 * * *' # Setiap hari jam 05:17 pagi WIB (22:17 UTC)
   workflow_dispatch:
 
 
